@@ -1,62 +1,68 @@
-let userScore = 0;
-let compScore = 0;
+        const choices = document.querySelectorAll(".choice");
+        const msg = document.querySelector("#msg");
+        const beepSound = document.querySelector("#beep-sound");
 
-const choices = document.querySelectorAll(".choice");
-const msg = document.querySelector("#msg");
-const userScorePara = document.querySelector("#user-score");
-const compScorePara = document.querySelector("#comp-score");
+        const genCompChoice = () => {
+            const options = ["rock", "paper", "scissors"];
+            return options[Math.floor(Math.random() * 3)];
+        };
 
-const showWinner = (userWin, userChoice, compChoice) => {
-    if(userWin){
+        const createBubbles = (event) => {
+            for (let i = 0; i < 5; i++) {
+                const bubble = document.createElement("div");
+                bubble.classList.add("bubble");
+                const xOffset = (Math.random() - 0.5) * 40;
+                const yOffset = (Math.random() - 0.5) * 40;
+                bubble.style.left = `${event.clientX + xOffset}px`;
+                bubble.style.top = `${event.clientY + yOffset}px`;
+                bubble.style.borderColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                document.body.appendChild(bubble);
+                setTimeout(() => bubble.remove(), 1500);
+            }
+        };
+
+        const createConfetti = () => {
+        const colors = ['#132641', '#ffd700', '#f5f5f5']; // Keeping old colors
+
+        for (let i = 0; i < 100; i++) {
+        const confetti = document.createElement('div');
+        confetti.classList.add('confetti');
+        confetti.style.left = `${Math.random() * 100}vw`;
+        confetti.style.animationDuration = `${Math.random() * 3 + 2}s`;
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.animation = `confetti-fall ${Math.random() * 3 + 2}s linear forwards`;
         
-        msg.innerText = `You Win your ${userChoice} beat ${compChoice}`;
-        msg.style.backgroundColor = "green";
-        userScore++;
-        userScorePara.innerText = userScore;
-    }
-    else{
-       
-        msg.innerText = `Computer Win ${compChoice} beats your ${userChoice}`;
-        msg.style.backgroundColor = "red";
-        compScore++;
-        compScorePara.innerText = compScore;
-    }
-};
+        document.body.appendChild(confetti);
+        setTimeout(() => confetti.remove(), 5000);
+        }
+        };
 
-const genCompChoice = () => {
-    const options = ["rock", "paper", "scissors"];
-    const randIdx = Math.floor(Math.random() * 3);
-    return options[randIdx];
-};
+        const playGame = (userChoice, event) => {
+            beepSound.play();
+            createBubbles(event);
+            const compChoice = genCompChoice();
+            
+            if (userChoice === compChoice) {
+                msg.innerText = "It's a draw!";
+                msg.style.backgroundColor = "#1d3557";
+            } else {
+                let userWin = (userChoice === "rock" && compChoice === "scissors") ||
+                              (userChoice === "paper" && compChoice === "rock") ||
+                              (userChoice === "scissors" && compChoice === "paper");
 
-const playGame = (userChoice) => {
-    console.log("user choice is = ", userChoice);
-    const compChoice = genCompChoice();
-    console.log("computer choice is = ", compChoice);
+                msg.innerText = userWin ? `You Win! ${userChoice} beats ${compChoice}` : `You Lose! ${compChoice} beats ${userChoice}`;
+                msg.style.backgroundColor = userWin ? "green" : "red";
+                msg.style.transform = "scale(1.1)";
+                setTimeout(() => msg.style.transform = "scale(1)", 300);
 
-    if(userChoice === compChoice) {
-        console.log("Game Draw");
-        msg.innerText = "Draw";
-        msg.style.backgroundColor = "black";
-    }
-    else{
-      let userWin = true;
-      if(userChoice === "rock") {
-        userWin = compChoice === "paper" ? false : true;
-      }
-      else if(userChoice === "paper"){
-        userWin = compChoice === "scissors" ? false : true;
-      }
-      else {
-        userWin = compChoice === "rock" ? false : true;
-      }
-      showWinner(userWin, userChoice, compChoice);
-    }
-};
+                if (userWin) {
+                    createConfetti();
+                }
+            }
+        };
 
-choices.forEach((choice) => {
-    choice.addEventListener("click", () => {
-        const userChoice = choice.getAttribute("id");
-        playGame(userChoice);
-    });
-});
+        choices.forEach(choice => {
+            choice.addEventListener("click", (event) => {
+                playGame(choice.id, event);
+            });
+        });
